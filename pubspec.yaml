@@ -1,7 +1,7 @@
 name: fix_dart
 description: Dart Fix Protocol 4.4 Client Library
 version: 0.0.1
-homepage: https://github.com/fix_dart
+homepage: https://github.com/putraxor/fix_dart
 
 environment:
   sdk: '>=2.8.1 <3.0.0'
