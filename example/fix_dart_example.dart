@@ -10,7 +10,7 @@ void main() async {
   client.connect(
     autoReconnect: true,
     onConnected: () {
-      client.subscribeQuote('EURUSD');
+      client.subscribeMarketData('EURUSD.spa');
     },
   );
 }
