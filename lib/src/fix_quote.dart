@@ -15,5 +15,5 @@ class Quote {
   @override
   String toString() => '$symbol,$price,$sendingTime';
 
-  String describe() => '$symbol ${price?.toStringAsPrecision(6)} ${latency}ms';
+  String describe() => '$symbol ${price?.toStringAsPrecision(7)} ${latency}ms';
 }

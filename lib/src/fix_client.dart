@@ -36,7 +36,7 @@ class FixClient {
         [
           MDReqID(_reqId),
           SubscriptionRequestType(1),
-          MarketDepth(1),
+          MarketDepth(0),
           MDUpdateType(0),
           NoMDEntryTypes(2),
           MDEntryType(0),
