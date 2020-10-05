@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fix_dart/src/fix_quote.dart';
+
 import 'fix_44.dart';
 
 class FixClient {
@@ -14,7 +16,7 @@ class FixClient {
   String host, senderCompID, targetCompID, username, password;
   int port;
 
-  bool debug = true;
+  bool debug = false;
 
   FixClient(
       {this.host,
@@ -97,7 +99,15 @@ class FixClient {
           var parsed = {};
           for (var kv in '$data'.split(_separator)) {
             var split = kv.split('=');
-            if (split.length > 1) parsed[split[0]] = split[1];
+            if (split.length > 1) {
+              var k = split[0];
+              var v = split[1];
+              if (parsed[k] != null) {
+                parsed['$k$k'] = v;
+              } else {
+                parsed[k] = v;
+              }
+            }
           }
           // print(parsed);
           var serverMessage = parsed[Text().tag];
@@ -111,14 +121,17 @@ class FixClient {
           //MARKETDATASNAPSHOTFULLREFRESH
           else if (messageType == 'W') {
             var symbol = parsed[Symbol().tag];
-            var priceType = parsed['269'];
-            var price = parsed['270'];
-            var volume = parsed['271'];
-            var transactTime = parsed['60'];
-            var sendingTime = parsed['52'];
+            var sendingTime = DateTime.tryParse(
+                '${parsed[SendingTime().tag]}Z'.replaceFirst('-', ' '));
+            var BID = MDEntryPx().tag;
+            var OFFER = '$BID$BID';
+            var ask = double.tryParse('${parsed[OFFER]}');
+            var bid = double.tryParse('${parsed[BID]}');
+            var quote = Quote(symbol, ask, bid, sendingTime);
+            print(quote.describe());
           }
-        } catch (e) {
-          print('${DateTime.now()} $_tag failed to parse message $e');
+        } catch (e, t) {
+          print('${DateTime.now()} $_tag failed to parse message $e\n$t');
         }
       }
 
