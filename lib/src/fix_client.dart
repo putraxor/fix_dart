@@ -5,7 +5,7 @@ import 'package:fix_dart/src/fix_quote.dart';
 
 import 'fix_44.dart';
 
-class FixClient {
+class FixDart {
   final _soh = String.fromCharCode(1);
   final _separator = '|';
   final _tag = 'FixClient';
@@ -18,7 +18,7 @@ class FixClient {
 
   bool debug = false;
 
-  FixClient(
+  FixDart(
       {this.host,
       this.port,
       this.senderCompID,

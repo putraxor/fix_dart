@@ -3,10 +3,10 @@ import 'package:test/test.dart';
 
 void main() {
   group('A group of tests', () {
-    FixClient client;
+    FixDart client;
 
     setUp(() {
-      client = FixClient();
+      client = FixDart();
     });
 
     test('First Test', () {
