@@ -1,19 +1,19 @@
 class Quote {
   String symbol;
   double ask, bid;
-  DateTime sendingTime, receivedTime;
+  DateTime createdAt, receivedAt;
 
-  Quote(this.symbol, this.ask, this.bid, this.sendingTime) {
-    receivedTime = DateTime.now().toUtc();
+  Quote(this.symbol, this.ask, this.bid, this.createdAt) {
+    receivedAt = DateTime.now().toUtc();
   }
 
   double get price => ((ask + bid) / 2);
-  int get latency => sendingTime == null
+  int get latency => createdAt == null
       ? null
-      : receivedTime.difference(sendingTime).inMilliseconds.abs();
+      : receivedAt.difference(createdAt).inMilliseconds.abs();
 
   @override
-  String toString() => '$symbol,$price,$sendingTime';
+  String toString() => '$symbol,$price,$createdAt';
 
   String describe() => '$symbol ${price?.toStringAsPrecision(7)} ${latency}ms';
 }
