@@ -7,7 +7,7 @@ class Quote {
     receivedAt = DateTime.now().toUtc();
   }
 
-  double get price => ((ask + bid) / 2);
+  double get price => (ask == null || bid == null) ? null : ((ask + bid) / 2);
   int get latency => createdAt == null
       ? null
       : receivedAt.difference(createdAt).inMilliseconds.abs();

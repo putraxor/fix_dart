@@ -123,7 +123,7 @@ class FixDart {
           if (messageType == '0') {
           }
           //MARKETDATASNAPSHOTFULLREFRESH
-          else if (messageType == 'W') {
+          else if (messageType == 'W' || messageType == 'X') {
             var symbol = parsed[Symbol().tag];
             var sendingTime = DateTime.tryParse(
                 '${parsed[SendingTime().tag]}Z'.replaceFirst('-', ' '));
