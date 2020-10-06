@@ -5,6 +5,8 @@ import 'package:fix_dart/src/fix_quote.dart';
 
 import 'fix_44.dart';
 
+typedef OnQuoteReceived = Function(Quote quote);
+
 class FixDart {
   final _soh = String.fromCharCode(1);
   final _separator = '|';
@@ -88,6 +90,7 @@ class FixDart {
   void connect({
     bool autoReconnect = false,
     Function onConnected,
+    OnQuoteReceived onQuoteReceived,
   }) {
     Socket.connect(host, port).then((socket) async {
       _socket = socket;
@@ -128,7 +131,7 @@ class FixDart {
             var ask = double.tryParse('${parsed[OFFER]}');
             var bid = double.tryParse('${parsed[BID]}');
             var quote = Quote(symbol, ask, bid, sendingTime);
-            print(quote.describe());
+            if (onQuoteReceived != null) onQuoteReceived(quote);
           }
         } catch (e, t) {
           print('${DateTime.now()} $_tag failed to parse message $e\n$t');
