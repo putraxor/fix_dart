@@ -94,6 +94,7 @@ class FixDart {
   }) {
     Socket.connect(host, port).then((socket) async {
       _socket = socket;
+      _socket.setOption(SocketOption.tcpNoDelay, true);
       printLog('🔀 is connected to $host:$port');
       void dataHandler(event) {
         try {
