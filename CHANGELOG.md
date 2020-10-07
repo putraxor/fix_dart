@@ -1,3 +1,6 @@
+## 0.0.1+3
+- fixed repeated group in single message
+
 ## 0.0.1+2
 - Enabled X tag
 

@@ -12,6 +12,7 @@ class FixDart {
   final _separator = '|';
   final _tag = 'FixClient';
   final _version = 'FIX.4.4';
+  final msgRegex = RegExp(r'[^0-9a-zA-Z:\s]*8=FIX(.*?)[^0-9]10=\d\d\d.?');
   Socket _socket;
   int _reqId = 1;
 
@@ -94,45 +95,52 @@ class FixDart {
   }) {
     Socket.connect(host, port).then((socket) async {
       _socket = socket;
-      _socket.setOption(SocketOption.tcpNoDelay, true);
+      // _socket.setOption(SocketOption.tcpNoDelay, true);
       printLog('🔀 is connected to $host:$port');
       void dataHandler(event) {
         try {
-          var data = utf8.decode(event).replaceAll(_soh, _separator);
-          if (debug) printLog('⤵️ $data');
-          var parsed = {};
-          for (var kv in '$data'.split(_separator)) {
-            var split = kv.split('=');
-            if (split.length > 1) {
-              var k = split[0];
-              var v = split[1];
-              if (parsed[k] != null) {
-                parsed['$k$k'] = v;
-              } else {
-                parsed[k] = v;
+          var raw = utf8.decode(event).replaceAll(_soh, _separator);
+          if (debug) printLog('⤵️ $raw');
+
+          var matches = msgRegex.allMatches(raw);
+          if (matches != null) {
+            for (var match in matches) {
+              var data = match.group(0);
+              var parsed = {};
+              for (var kv in '$data'.split(_separator)) {
+                var split = kv.split('=');
+                if (split.length > 1) {
+                  var k = split[0];
+                  var v = split[1];
+                  if (parsed[k] != null) {
+                    parsed['$k$k'] = v;
+                  } else {
+                    parsed[k] = v;
+                  }
+                }
+              }
+              // print(parsed);
+              var serverMessage = parsed[Text().tag];
+              var messageType = parsed[MsgType().tag];
+              if (serverMessage != null) {
+                printLog('💬 $serverMessage');
+              }
+              //HEARTBEAT
+              if (messageType == '0') {
+              }
+              //MARKETDATASNAPSHOTFULLREFRESH
+              else if (messageType == 'W') {
+                var symbol = parsed[Symbol().tag];
+                var sendingTime = DateTime.tryParse(
+                    '${parsed[SendingTime().tag]}Z'.replaceFirst('-', ' '));
+                var BID = MDEntryPx().tag;
+                var OFFER = '$BID$BID';
+                var ask = double.tryParse('${parsed[OFFER]}');
+                var bid = double.tryParse('${parsed[BID]}');
+                var quote = Quote(symbol, ask, bid, sendingTime);
+                if (onQuoteReceived != null) onQuoteReceived(quote);
               }
             }
-          }
-          // print(parsed);
-          var serverMessage = parsed[Text().tag];
-          var messageType = parsed[MsgType().tag];
-          if (serverMessage != null) {
-            printLog('💬 $serverMessage');
-          }
-          //HEARTBEAT
-          if (messageType == '0') {
-          }
-          //MARKETDATASNAPSHOTFULLREFRESH
-          else if (messageType == 'W' || messageType == 'X') {
-            var symbol = parsed[Symbol().tag];
-            var sendingTime = DateTime.tryParse(
-                '${parsed[SendingTime().tag]}Z'.replaceFirst('-', ' '));
-            var BID = MDEntryPx().tag;
-            var OFFER = '$BID$BID';
-            var ask = double.tryParse('${parsed[OFFER]}');
-            var bid = double.tryParse('${parsed[BID]}');
-            var quote = Quote(symbol, ask, bid, sendingTime);
-            if (onQuoteReceived != null) onQuoteReceived(quote);
           }
         } catch (e, t) {
           print('${DateTime.now()} $_tag failed to parse message $e\n$t');
