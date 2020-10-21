@@ -30,6 +30,7 @@ class FixDart {
       this.password});
 
   bool get isConnected => _socket != null;
+  Socket get connection => _socket;
 
   ///Subscribe market data
   void subscribeMarketData(String symbol) {

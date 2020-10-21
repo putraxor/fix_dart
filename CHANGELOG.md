@@ -1,3 +1,6 @@
+## 0.0.1+4
+- add access to connection
+
 ## 0.0.1+3
 - fixed repeated group in single message
 
