@@ -1,3 +1,5 @@
+## 0.0.1+5
+- add heartbeat message every 30s
 ## 0.0.1+4
 - add access to connection
 

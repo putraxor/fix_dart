@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -15,6 +16,8 @@ class FixDart {
   final msgRegex = RegExp(r'[^0-9a-zA-Z:\s]*8=FIX(.*?)[^0-9]10=\d\d\d.?');
   Socket _socket;
   int _reqId = 1;
+
+  Timer _hearbeat;
 
   String host, senderCompID, targetCompID, username, password;
   int port;
@@ -91,13 +94,26 @@ class FixDart {
   ///Connect to FIX api
   void connect({
     bool autoReconnect = false,
+    int reconnectDelay = 0,
     Function onConnected,
     OnQuoteReceived onQuoteReceived,
   }) {
     Socket.connect(host, port).then((socket) async {
       _socket = socket;
-      // _socket.setOption(SocketOption.tcpNoDelay, true);
+      _socket.setOption(SocketOption.tcpNoDelay, true);
       printLog('🔀 is connected to $host:$port');
+      _hearbeat = Timer.periodic(Duration(seconds: 30), (t) {
+        //Send heartbeat message
+        var msg = serialize(
+          MsgTypes.HEARTBEAT,
+          [
+            TestReqID(_reqId),
+          ],
+        );
+        _socket.add(utf8.encode(msg));
+        if (debug) printLog('⤴️ ${msg.replaceAll(_soh, _separator)}');
+        _reqId++;
+      });
       void dataHandler(event) {
         try {
           var raw = utf8.decode(event).replaceAll(_soh, _separator);
@@ -152,19 +168,27 @@ class FixDart {
         printLog('⛔️ connection error $e');
       }
 
-      void doneHandler() {
+      void doneHandler() async {
         printLog('🚫 socket connection done, will reconnect? $autoReconnect');
         _socket.destroy();
         _socket = null;
         _reqId = 1;
-        if (autoReconnect) connect(autoReconnect: autoReconnect);
+        try {
+          _hearbeat?.cancel();
+        } catch (e) {
+          //
+        }
+        if (autoReconnect) {
+          await Future.delayed(Duration(seconds: reconnectDelay),
+              () => connect(autoReconnect: autoReconnect));
+        }
       }
 
       _socket.listen(
         dataHandler,
         onError: errorHandler,
         onDone: doneHandler,
-        cancelOnError: false,
+        cancelOnError: true,
       );
 
       //Send logon message
@@ -172,7 +196,7 @@ class FixDart {
         MsgTypes.LOGON,
         [
           EncryptMethod(0),
-          HeartBtInt(0),
+          HeartBtInt(30),
           ResetSeqNumFlag('Y'),
           Username(username),
           Password(password)
