@@ -1,3 +1,6 @@
+## 0.0.1+6
+- fixing bugs parameter not included on auto reconnect
+
 ## 0.0.1+5
 - add heartbeat message every 30s
 ## 0.0.1+4

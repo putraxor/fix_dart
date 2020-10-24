@@ -16,7 +16,7 @@ class FixDart {
   final msgRegex = RegExp(r'[^0-9a-zA-Z:\s]*8=FIX(.*?)[^0-9]10=\d\d\d.?');
   Socket _socket;
   int _reqId = 1;
-
+  var isConnecting = true;
   Timer _hearbeat;
 
   String host, senderCompID, targetCompID, username, password;
@@ -98,7 +98,9 @@ class FixDart {
     Function onConnected,
     OnQuoteReceived onQuoteReceived,
   }) {
+    isConnecting = true;
     Socket.connect(host, port).then((socket) async {
+      isConnecting = false;
       _socket = socket;
       _socket.setOption(SocketOption.tcpNoDelay, true);
       printLog('🔀 is connected to $host:$port');
@@ -179,8 +181,16 @@ class FixDart {
           //
         }
         if (autoReconnect) {
-          await Future.delayed(Duration(seconds: reconnectDelay),
-              () => connect(autoReconnect: autoReconnect));
+          await Future.delayed(Duration(seconds: reconnectDelay), () {
+            if (!isConnecting && !isConnected) {
+              connect(
+                autoReconnect: autoReconnect,
+                reconnectDelay: reconnectDelay,
+                onConnected: onConnected,
+                onQuoteReceived: onQuoteReceived,
+              );
+            }
+          });
         }
       }
 
