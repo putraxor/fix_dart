@@ -13,3 +13,4 @@ build/
 doc/api/
 
 example/example_private.dart
+private/
