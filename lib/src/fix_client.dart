@@ -18,6 +18,8 @@ class FixDart {
   int _reqId = 1;
   var isConnecting = true;
   Timer _hearbeat;
+  bool autoReconnect = true;
+  Function(String log) onWriteLog;
 
   String host, senderCompID, targetCompID, username, password;
   int port;
@@ -36,14 +38,14 @@ class FixDart {
   Socket get connection => _socket;
 
   ///Subscribe market data
-  void subscribeMarketData(String symbol) {
+  void subscribeMarketData(String symbol, [int depth = 0]) {
     if (isConnected) {
       var msg = serialize(
         MsgTypes.MARKETDATAREQUEST,
         [
           MDReqID(_reqId),
           SubscriptionRequestType(1),
-          MarketDepth(0),
+          MarketDepth(depth),
           MDUpdateType(0),
           NoMDEntryTypes(2),
           MDEntryType(0),
@@ -98,6 +100,7 @@ class FixDart {
     Function onConnected,
     OnQuoteReceived onQuoteReceived,
   }) {
+    this.autoReconnect = autoReconnect;
     isConnecting = true;
     Socket.connect(host, port).then((socket) async {
       isConnecting = false;
@@ -167,11 +170,13 @@ class FixDart {
       }
 
       void errorHandler(e, trace) {
+        _reqId = 1;
         printLog('⛔️ connection error $e');
       }
 
       void doneHandler() async {
-        printLog('🚫 socket connection done, will reconnect? $autoReconnect');
+        printLog(
+            '🚫 socket connection done, will reconnect? ${this.autoReconnect}');
         _socket.destroy();
         _socket = null;
         _reqId = 1;
@@ -180,11 +185,11 @@ class FixDart {
         } catch (e) {
           //
         }
-        if (autoReconnect) {
+        if (this.autoReconnect) {
           await Future.delayed(Duration(seconds: reconnectDelay), () {
             if (!isConnecting && !isConnected) {
               connect(
-                autoReconnect: autoReconnect,
+                autoReconnect: this.autoReconnect,
                 reconnectDelay: reconnectDelay,
                 onConnected: onConnected,
                 onQuoteReceived: onQuoteReceived,
@@ -220,13 +225,14 @@ class FixDart {
       _socket = null;
       _reqId = 1;
       print('${DateTime.now()} $_tag can not connect to host $e');
-      if (autoReconnect) {
-        connect(autoReconnect: autoReconnect, onConnected: onConnected);
+      if (this.autoReconnect) {
+        connect(autoReconnect: this.autoReconnect, onConnected: onConnected);
       }
     });
   }
 
   void printLog(String message) {
     print('${DateTime.now()} $_tag $message');
+    if (onWriteLog != null) onWriteLog(message);
   }
 }

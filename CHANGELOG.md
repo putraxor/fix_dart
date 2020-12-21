@@ -1,3 +1,8 @@
+## 0.0.1+7
+- added auto reconnect setting to class
+- added onWriteLog callback
+- added ability to subscribe market data with different depth
+
 ## 0.0.1+6
 - fixing bugs parameter not included on auto reconnect
 
